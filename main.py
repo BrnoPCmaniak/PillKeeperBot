@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 from telegram import Emoji, ForceReply, InlineKeyboardButton, \
     InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, \
@@ -119,7 +120,7 @@ def hello(bot, update):
 def error(bot, update, error):
     logging.warning('Update "%s" caused error "%s"' % (update, error))
 
-updater = Updater('')
+updater = Updater(os.environ.get('TOKEN'))
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(CommandHandler('new', new_pill))
