@@ -5,11 +5,12 @@ from telegram import Emoji, ForceReply, InlineKeyboardButton, \
 from telegram.ext import Updater, CommandHandler, MessageHandler, \
     CallbackQueryHandler, Filters
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - '
+                           '%(message)s',
                     level=logging.DEBUG)
 
 # Define the different states a chat can be in
-MENU, ENTER_NAME, ENTER_TIMES, ENTER_DATES = range(4)
+MENU, ENTER_NAME, ENTER_TIMES, CHOSE_REPEATING, ENTER_DATES = range(5)
 
 # States are saved in a dict that maps chat_id -> state
 state = dict()
@@ -38,7 +39,8 @@ class Pill(object):
         self.times.append((hour, minute))
 
     def add_time_from_re_match(self, match):
-        self.add_time(**match.group(1, 2))
+        self.add_time(*match.group(1, 2))
+
 
 def add_and_return_context(name, user_id):
     p = Pill(name, user_id)
@@ -80,12 +82,14 @@ def entered_value(bot, update):
                         text="Please enter time/s in format 12:00 (GMT)",
                         reply_markup=ForceReply())
     elif chat_state == ENTER_TIMES:
-        m = re.match(r"^(/d{1:2}):(/d{1:2})$", update.message.text)
+        m = re.match(r"^(\d{1,2}):(\d{1,2})$", update.message.text)
         if m is not None:
             pill = context.get(user_id, None)
             pill.add_time_from_re_match(m)
             bot.sendMessage(chat_id,
-                            text="Got {0}:{0} Please enter another time/s in format 12:00 (GMT) or press ",
+                            text="Got {0}:{1} Please enter another time/s in "
+                                 "format 12:00 (GMT) or enter "
+                                 "/next".format(*m.group(1, 2)),
                             reply_markup=ForceReply())
         else:
             bot.sendMessage(chat_id,
@@ -93,10 +97,23 @@ def entered_value(bot, update):
                             reply_markup=ForceReply())
 
 
+def next_state(bot, update):
+    chat_id = update.message.chat_id
+    user_id = update.message.from_user.id
+    chat_state = state.get(user_id, MENU)
+
+    if chat_state == ENTER_TIMES:
+        state[user_id] = CHOSE_REPEATING
+        bot.sendMessage(chat_id, text="Which type of day repeating do "
+                                      "you want?")
+    else:
+        bot.sendMessage(chat_id, text="ERROR: nothing to do.")
+
 
 def hello(bot, update):
     bot.sendMessage(update.message.chat_id,
-                    text='Hello {0}'.format(update.message.from_user.first_name))
+                    text='Hello {0}'.format(
+                        update.message.from_user.first_name))
 
 
 def error(bot, update, error):
@@ -106,6 +123,7 @@ updater = Updater('')
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(CommandHandler('new', new_pill))
+updater.dispatcher.add_handler(CommandHandler('next', next_state))
 updater.dispatcher.add_handler(MessageHandler([Filters.text], entered_value))
 updater.dispatcher.add_handler(CommandHandler('hello', hello))
 updater.dispatcher.add_error_handler(error)
