@@ -24,6 +24,9 @@ class WeekDaysRepetion(models.Model):
     pill = models.ForeignKey(Pill, related_name="wdays")
     day = models.IntegerField()
 
+    def remove(self):
+        return self.delete(keep_parents=True)
+
 class RepeatEveryDay(models.Model):
     pill = models.OneToOneField(Pill, related_name="everyday")
 
@@ -52,4 +55,4 @@ class State(models.Model):
             return s
 
     def clean(self):
-        return self.delete(keep_parents())
+        return self.delete(keep_parents=True)
