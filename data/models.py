@@ -1,4 +1,5 @@
 import sys
+import datetime
 
 try:
     from django.db import models
@@ -10,6 +11,13 @@ class Pill(models.Model):
     chat_id = models.BigIntegerField()
     user_id = models.BigIntegerField()
     name = models.CharField(max_length=60)
+
+    def add_time_from_re_match(self, match):
+        self.add_time(*match.group(1, 2))
+
+    def add_time(self, hour, minute):
+        t = datetime.time(int(hour), int(minute))
+        Time(pill=self, time=t).save()
 
 class WeekDaysRepetion(models.Model):
     pill = models.ForeignKey(Pill)
