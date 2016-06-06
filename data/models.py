@@ -26,3 +26,8 @@ class Time(models.Model):
     pill = models.ForeignKey(Pill)
     time = models.TimeField()
     last_done = models.DateField(auto_now=True)
+
+class State(models.Model):
+    chat_id = models.BigIntegerField()
+    user_id = models.BigIntegerField()
+    state = models.IntegerField()
