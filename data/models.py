@@ -3,8 +3,9 @@ import datetime
 
 try:
     from django.db import models
-except  Exception:
+except Exception as e:
     print("There was an error loading django modules. Do you have django installed?")
+    raise e
     sys.exit()
 
 class Pill(models.Model):
@@ -20,18 +21,18 @@ class Pill(models.Model):
         Time(pill=self, time=t).save()
 
 class WeekDaysRepetion(models.Model):
-    pill = models.ForeignKey(Pill)
+    pill = models.ForeignKey(Pill, related_name="wdays")
     day = models.IntegerField()
 
 class RepeatEveryDay(models.Model):
-    pill = models.OneToOneField(Pill)
+    pill = models.OneToOneField(Pill, related_name="everyday")
 
 class RepeatEveryNthDay(models.Model):
-    pill = models.OneToOneField(Pill)
+    pill = models.OneToOneField(Pill, related_name="everynday")
     n = models.IntegerField()
 
 class Time(models.Model):
-    pill = models.ForeignKey(Pill)
+    pill = models.ForeignKey(Pill, related_name="times")
     time = models.TimeField()
     last_done = models.DateField(auto_now=True)
 
@@ -49,3 +50,6 @@ class State(models.Model):
             s = cls(chat_id=chat_id, user_id=user_id, state=0)
             s.save()
             return s
+
+    def clean(self):
+        return self.delete(keep_parents())
