@@ -8,6 +8,16 @@ from telegram import (
 from telegram.ext import (
     Filters, Updater, CommandHandler, MessageHandler, CallbackQueryHandler)
 
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+
+# Ensure settings are read
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+
+# Your application specific imports
+from data.models import *
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - '
                            '%(message)s',
                     level=logging.DEBUG)
