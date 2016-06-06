@@ -94,14 +94,14 @@ def start(bot, update):
                          "pills!\nUse /new to add new pill.")
 
 
-# Example handler. Will be called on the /set command and on regular messages
 def new_pill(bot, update):
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
-    user_state = state.get(chat_id, MENU)
+    user_state = State.get_state(chat_id, user_id)
 
-    if user_state == MENU:
-        state[user_id] = ENTER_NAME  # set the state
+    if user_state.state == MENU:
+        user_state.state = ENTER_NAME  # set the state
+        user_state.save()
         bot.sendMessage(chat_id,
                         text="Please enter name of the pill:")
 
@@ -109,7 +109,7 @@ def new_pill(bot, update):
 def entered_value(bot, update):
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
-    chat_state = state.get(user_id, MENU)
+    chat_state = state.get_state(user_id, MENU)
 
     # Check if we are waiting for input
     if chat_state == ENTER_NAME:
@@ -231,6 +231,8 @@ def error(bot, update, error):
 def list_pills(bot, update):
     chat_id = update.message.chat_id
     user_id = update.message.from_user.id
+
+    logging.warn(str(chat_id) + ":!:" + str(user_id))
 
     bot.sendMessage(
         chat_id,

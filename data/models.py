@@ -30,4 +30,13 @@ class Time(models.Model):
 class State(models.Model):
     chat_id = models.BigIntegerField()
     user_id = models.BigIntegerField()
-    state = models.IntegerField()
+    state = models.IntegerField(default=0)
+
+    @classmethod
+    def get_state(cls, chat_id, user_id):
+        try:
+            return cls.objects.get(chat_id=chat_id, user_id=user_id)
+        except cls.DoesNotExist:
+            s = cls(chat_id=chat_id, user_id=user_id, state=0)
+            s.save()
+            return s
