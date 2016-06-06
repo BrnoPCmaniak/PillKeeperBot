@@ -31,6 +31,7 @@ class State(models.Model):
     chat_id = models.BigIntegerField()
     user_id = models.BigIntegerField()
     state = models.IntegerField(default=0)
+    pill = models.ForeignKey(Pill, blank=True, null=True, default=None)
 
     @classmethod
     def get_state(cls, chat_id, user_id):
